@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -21,8 +23,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".HomeActivity" />
-        <activity android:name=".products.EditProductActivity" />
+        <activity android:name=".AdminHomeActivity" />
+        <activity android:name=".admins.AdminOrderActivity" />
+        <activity android:name=".UserHomeActivity" />
+        <activity android:name=".users.CartActivity" />
+        <activity android:name=".users.OrderHistoryActivity" />
+        <activity android:name=".users.OrderDetailActivity" />
+        <activity android:name=".admins.products.EditProductActivity" />
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.example.productclasswork.users;
+package com.example.productclasswork.admins.users;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.productclasswork.R;
 import com.example.productclasswork.DbHelper;
+import com.example.productclasswork.models.User;
 
 import java.util.List;
 

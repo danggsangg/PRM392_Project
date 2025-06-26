@@ -1,4 +1,4 @@
-package com.example.productclasswork.products;
+package com.example.productclasswork.admins.products;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -14,14 +14,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.productclasswork.DbHelper;
+import com.example.productclasswork.models.Product;
 import com.example.productclasswork.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class ProductFragment extends Fragment {
+public class AdminProductFragment extends Fragment {
     RecyclerView recyclerView;
-    ProductAdapter adapter;
+    AdminProductAdapter adapter;
     DbHelper db;
     private SearchView searchView;
 
@@ -35,7 +36,7 @@ public class ProductFragment extends Fragment {
 
         db = new DbHelper(getActivity());
         List<Product> list = db.getAllProducts();
-        adapter = new ProductAdapter(getActivity(), list);
+        adapter = new AdminProductAdapter(getActivity(), list);
         recyclerView.setAdapter(adapter);
 
         searchView = view.findViewById(R.id.searchView);
