@@ -1,43 +1,37 @@
-package com.example.productclasswork.products;
+package com.example.productclasswork.admins.products;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
-
+import android.view.*;
+import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.example.productclasswork.DbHelper;
+import com.example.productclasswork.models.Product;
 import com.example.productclasswork.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
+public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapter.ViewHolder> {
     private Context context;
     private List<Product> productList;
     private List<Product> fullList;
-
-    public ProductAdapter(Context ctx, List<Product> list) {
+    public AdminProductAdapter(Context ctx, List<Product> list) {
         this.context = ctx;
         this.productList = new ArrayList<>(list);
         this.fullList = new ArrayList<>(list);
     }
 
-    public static class ProductViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgProduct;
         ImageButton btnEdit, btnDelete;
         TextView txtTitle, txtPrice, txtStock, txtDescription;
 
-        public ProductViewHolder(View itemView) {
+        public ViewHolder(View itemView) {
             super(itemView);
             imgProduct = itemView.findViewById(R.id.imgProduct);
             txtTitle = itemView.findViewById(R.id.txtTitle);
@@ -51,14 +45,14 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
     @NonNull
     @Override
-    public ProductViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(context).inflate(R.layout.item_product, parent, false);
-        return new ProductViewHolder(v);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(context).inflate(R.layout.item_product_admin, parent, false);
+        return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
-        Product p = productList.get(position);
+    public void onBindViewHolder(@NonNull ViewHolder holder, int pos) {
+        Product p = productList.get(pos);
         holder.txtTitle.setText(p.title);
         holder.txtPrice.setText("Price: $" + p.price);
         holder.txtStock.setText("Stock: " + p.stock);
@@ -81,8 +75,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     .setPositiveButton("Yes", (dialog, which) -> {
                         DbHelper db = new DbHelper(context);
                         db.deleteProduct(p.id);
-                        productList.remove(position);
-                        notifyItemRemoved(position);
+                        productList.remove(pos);
+                        notifyItemRemoved(pos);
                     })
                     .setNegativeButton("No", null)
                     .show();

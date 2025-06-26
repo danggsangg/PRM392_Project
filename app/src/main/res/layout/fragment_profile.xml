@@ -1,36 +1,49 @@
-<!-- res/layout/fragment_profile.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="32dp"
-    android:background="#FAFAFA">
+    android:background="#FAFAFA"
+    android:padding="24dp">
 
-    <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@android:drawable/ic_menu_myplaces"
-        android:layout_marginBottom="24dp"
-        app:tint="#2196F3" />
+    <!-- Avatar -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        app:cardCornerRadius="60dp"
+        app:cardElevation="6dp"
+        android:layout_marginBottom="24dp">
 
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:src="@android:drawable/ic_menu_myplaces"
+            android:scaleType="centerInside"
+            android:tint="#2196F3" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- Greeting -->
     <TextView
         android:id="@+id/txtHello"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello User"
+        android:text="Hello, User"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:textColor="#333333"
-        android:layout_marginBottom="40dp" />
+        android:textColor="#212121"
+        android:layout_marginBottom="32dp" />
 
+    <!-- Logout button -->
     <Button
         android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
         android:text="Logout"
-        android:backgroundTint="#F44336"
+        android:textAllCaps="false"
         android:textColor="#FFFFFF"
-        android:paddingHorizontal="24dp" />
+        android:textStyle="bold"
+        android:backgroundTint="#F44336"
+        android:elevation="4dp" />
 </LinearLayout>

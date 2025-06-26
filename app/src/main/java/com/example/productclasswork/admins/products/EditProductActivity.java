@@ -1,4 +1,4 @@
-package com.example.productclasswork.products;
+package com.example.productclasswork.admins.products;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.productclasswork.DbHelper;
+import com.example.productclasswork.models.Product;
 import com.example.productclasswork.R;
 
 public class EditProductActivity extends AppCompatActivity {
@@ -55,9 +56,10 @@ public class EditProductActivity extends AppCompatActivity {
 
         // Chọn ảnh từ thư viện
         btnChooseImage.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.setType("image/*");
-            startActivityForResult(intent, PICK_IMAGE);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(Intent.createChooser(intent, "Select Product Image"), PICK_IMAGE);
         });
 
         // Lưu dữ liệu sản phẩm
@@ -84,12 +86,15 @@ public class EditProductActivity extends AppCompatActivity {
         });
     }
 
-    // Nhận kết quả chọn ảnh
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK && data != null) {
             imageUri = data.getData();
+            getContentResolver().takePersistableUriPermission(
+                    imageUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+            );
             imgPreview.setImageURI(imageUri);
         }
     }

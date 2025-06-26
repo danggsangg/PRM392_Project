@@ -8,6 +8,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.productclasswork.models.User;
+
 public class LoginActivity extends AppCompatActivity {
     EditText txtUsername, txtPassword;
     Button btnLogin;
@@ -26,13 +28,20 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(v -> {
             String user = txtUsername.getText().toString();
             String pass = txtPassword.getText().toString();
-            if (db.validateLogin(user, pass)) {
-                Intent i = new Intent(LoginActivity.this, HomeActivity.class);
-                i.putExtra("username", user);
+            User u = db.getUserByCredentials(user, pass);
+            if (u != null && u.active) {
+                Intent i;
+                if (u.role.equals("admin")) {
+                    i = new Intent(LoginActivity.this, AdminHomeActivity.class);
+                } else {
+                    i = new Intent(LoginActivity.this, UserHomeActivity.class);
+                }
+                i.putExtra("userId", u.id);
+                i.putExtra("username", u.username);
                 startActivity(i);
                 finish();
             } else {
-                Toast.makeText(this, "Login Failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Login Failed or Account Locked", Toast.LENGTH_SHORT).show();
             }
         });
     }

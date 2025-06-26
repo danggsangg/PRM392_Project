@@ -1,20 +1,22 @@
 package com.example.productclasswork;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.productclasswork.products.ProductFragment;
-import com.example.productclasswork.users.UserFragment;
+import com.example.productclasswork.admins.AdminOrderActivity;
+import com.example.productclasswork.admins.products.AdminProductFragment;
+import com.example.productclasswork.admins.users.UserFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class HomeActivity extends AppCompatActivity {
+public class AdminHomeActivity extends AppCompatActivity {
     String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_admin_home);
 
         username = getIntent().getStringExtra("username");
 
@@ -26,10 +28,13 @@ public class HomeActivity extends AppCompatActivity {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, new ProfileFragment(username)).commit();
                 return true;
             } else if (item.getItemId() == R.id.nav_product) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, new ProductFragment()).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, new AdminProductFragment()).commit();
                 return true;
             } else if (item.getItemId() == R.id.nav_users){
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, new UserFragment()).commit();
+                return true;
+            } else if (item.getItemId() == R.id.nav_orders){
+                startActivity(new Intent(AdminHomeActivity.this, AdminOrderActivity.class));
                 return true;
             }
             return false;

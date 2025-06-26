@@ -1,7 +1,9 @@
-package com.example.productclasswork.users;
+package com.example.productclasswork.admins.users;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.productclasswork.DbHelper;
 import com.example.productclasswork.R;
+import com.example.productclasswork.models.User;
 
 import java.util.List;
 
@@ -52,7 +55,19 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         User u = userList.get(position);
         holder.txtUsername.setText("Username: " + u.username);
         holder.txtRole.setText("Role: " + u.role);
-        holder.txtStatus.setText("Status: " + (u.active ? "Active" : "Locked"));
+
+        if (u.active) {
+            holder.txtStatus.setText("Status: Active");
+            holder.txtStatus.setTextColor(Color.parseColor("#4CAF50")); // Green
+            holder.btnToggleActive.setText("Block");
+            holder.btnToggleActive.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F44336"))); // Red
+        } else {
+            holder.txtStatus.setText("Status: Inactive");
+            holder.txtStatus.setTextColor(Color.parseColor("#F44336")); // Red
+            holder.btnToggleActive.setText("Unblock");
+            holder.btnToggleActive.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50"))); // Green
+        }
+
 
         if (u.role.equals("admin")) {
             holder.btnToggleActive.setVisibility(View.GONE);

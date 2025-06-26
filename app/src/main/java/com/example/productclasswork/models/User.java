@@ -1,4 +1,4 @@
-package com.example.productclasswork.users;
+package com.example.productclasswork.models;
 
 public class User {
     public int id;

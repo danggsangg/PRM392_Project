@@ -1,57 +1,88 @@
-<!-- res/layout/activity_login.xml -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FAFAFA">
+    android:background="#E0F7FA">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:orientation="vertical"
         android:padding="32dp"
-        android:gravity="center_horizontal">
+        android:layout_marginTop="200dp"
+        tools:ignore="ExtraText">
 
-        <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@android:drawable/ic_secure"
-            android:layout_marginTop="60dp"
-            android:layout_marginBottom="24dp"
-            app:tint="#3F51B5" />
-
-        <EditText
-            android:id="@+id/txtUsername"
+        <!-- Card container -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Username"
-            android:background="@drawable/edittext_background"
-            android:padding="12dp"
-            android:drawableLeft="@android:drawable/ic_menu_myplaces"
-            android:drawablePadding="8dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginTop="24dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp">
 
-        <EditText
-            android:id="@+id/txtPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Password"
-            android:inputType="textPassword"
-            android:background="@drawable/edittext_background"
-            android:padding="12dp"
-            android:drawableLeft="@android:drawable/ic_lock_idle_lock"
-            android:drawablePadding="8dp"
-            android:layout_marginBottom="24dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
 
-        <Button
-            android:id="@+id/btnLogin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="LOGIN"
-            android:textAllCaps="true"
-            android:backgroundTint="#3F51B5"
-            android:textColor="#FFFFFF"
-            android:padding="12dp"
-            android:elevation="4dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Login"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Username -->
+                <EditText
+                    android:id="@+id/txtUsername"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_edittext_rounded"
+                    android:drawableLeft="@android:drawable/ic_menu_myplaces"
+                    android:drawablePadding="10dp"
+                    android:paddingStart="14dp"
+                    android:hint="Username..." />
+
+                <!-- Password -->
+                <EditText
+                    android:id="@+id/txtPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_edittext_rounded"
+                    android:drawableLeft="@android:drawable/ic_lock_idle_lock"
+                    android:drawablePadding="10dp"
+                    android:paddingStart="14dp"
+                    android:hint="Password..."
+                    android:inputType="textPassword" />
+
+                <!-- Sign In -->
+                <Button
+                    android:id="@+id/btnLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="20dp"
+                    android:text="Sign in"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/bg_gradient_button" />
+
+                <!-- Forgot password -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Forgot your password?"
+                    android:textSize="13sp"
+                    android:textColor="#999999"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="12dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
     </LinearLayout>
 </ScrollView>
