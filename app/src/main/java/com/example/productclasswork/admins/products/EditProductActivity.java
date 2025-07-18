@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -64,37 +65,42 @@ public class EditProductActivity extends AppCompatActivity {
 
         // Lưu dữ liệu sản phẩm
         btnSave.setOnClickListener(v -> {
-            String imagePath = (imageUri != null) ? imageUri.toString() : "";
+            try {
+                String imagePath = (imageUri != null) ? imageUri.toString() : "";
 
-            Product p = new Product(
-                    productId,
-                    txtTitle.getText().toString(),
-                    Double.parseDouble(txtPrice.getText().toString()),
-                    Integer.parseInt(txtStock.getText().toString()),
-                    txtDescription.getText().toString(),
-                    imagePath
-            );
+                Product p = new Product(
+                        productId,
+                        txtTitle.getText().toString().trim(),
+                        Double.parseDouble(txtPrice.getText().toString()),
+                        Integer.parseInt(txtStock.getText().toString()),
+                        txtDescription.getText().toString().trim(),
+                        imagePath
+                );
 
-            if (productId == -1) {
-                db.insertProduct(p);
-            } else {
-                db.updateProduct(p);
+                if (productId == -1) {
+                    db.insertProduct(p);
+                } else {
+                    db.updateProduct(p);
+                }
+
+                setResult(RESULT_OK);
+                finish();
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Invalid number format", Toast.LENGTH_SHORT).show();
             }
-
-            setResult(RESULT_OK);
-            finish();
         });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE && resultCode == RESULT_OK && data != null) {
+
+        if (requestCode == PICK_IMAGE && resultCode == RESULT_OK && data != null && data.getData() != null) {
             imageUri = data.getData();
-            getContentResolver().takePersistableUriPermission(
-                    imageUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-            );
+
+            final int takeFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
             imgPreview.setImageURI(imageUri);
         }
     }
