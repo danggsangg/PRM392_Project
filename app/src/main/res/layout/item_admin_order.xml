@@ -66,5 +66,6 @@
             android:textColor="#FFFFFF"
             android:visibility="gone"
             android:layout_gravity="end" />
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -94,4 +94,11 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
     public int getItemCount() {
         return orderList.size();
     }
+
+    public void addOrders(List<Order> newOrders) {
+        int start = orderList.size();
+        orderList.addAll(newOrders);
+        notifyItemRangeInserted(start, newOrders.size());
+    }
+
 }

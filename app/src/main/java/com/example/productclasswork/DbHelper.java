@@ -129,6 +129,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return null;
     }
 
+    // GetAll
     public ArrayList<Product> getAllProducts() {
         ArrayList<Product> list = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
