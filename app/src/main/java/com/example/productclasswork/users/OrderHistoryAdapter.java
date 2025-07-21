@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.app.AlertDialog;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -69,10 +70,17 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         if ("Pending".equals(order.status)) {
             btnCancel.setVisibility(View.VISIBLE);
             btnCancel.setOnClickListener(v -> {
-                DbHelper db = new DbHelper(v.getContext());
-                db.updateOrderStatus(order.id, "Cancelled");
-                order.status = "Cancelled";
-                notifyItemChanged(position);
+                new AlertDialog.Builder(v.getContext())
+                    .setTitle("Cancel Order")
+                    .setMessage("Are you sure you want to cancel this order? You won't be able to review the products after cancellation.")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        DbHelper db = new DbHelper(v.getContext());
+                        db.updateOrderStatus(order.id, "Cancelled");
+                        order.status = "Cancelled";
+                        notifyItemChanged(position);
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
             });
         } else {
             btnCancel.setVisibility(View.GONE);

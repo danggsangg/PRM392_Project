@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -14,22 +14,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ProductClassWork"
         tools:targetApi="31">
-        <activity
-            android:name=".LoginActivity"
+
+        <activity android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".AdminHomeActivity" />
-        <activity android:name=".admins.AdminOrderActivity" />
         <activity android:name=".UserHomeActivity" />
         <activity android:name=".users.CartActivity" />
         <activity android:name=".users.OrderHistoryActivity" />
         <activity android:name=".users.OrderDetailActivity" />
+        <activity android:name=".users.ProductDetailActivity" />
+        <activity android:name=".admins.AdminOrderActivity" />
         <activity android:name=".admins.products.EditProductActivity" />
+
     </application>
 
 </manifest>

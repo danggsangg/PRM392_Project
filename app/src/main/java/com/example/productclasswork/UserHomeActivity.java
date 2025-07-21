@@ -22,14 +22,24 @@ public class UserHomeActivity extends AppCompatActivity {
         userId = getIntent().getIntExtra("userId", -1);
         username = getIntent().getStringExtra("username");
 
+        if (userId == -1 || username == null) {
+            finish();
+            return;
+        }
+
         BottomNavigationView nav = findViewById(R.id.userBottomNav);
-        getSupportFragmentManager().beginTransaction().replace(R.id.userFragmentContainer, new ProfileFragment(username)).commit();
+        
+        // Hiển thị UserProductFragment mặc định
+        getSupportFragmentManager().beginTransaction()
+            .replace(R.id.userFragmentContainer, new UserProductFragment(userId, username))
+            .commit();
+        nav.setSelectedItemId(R.id.nav_product);
 
         nav.setOnItemSelectedListener(item -> {
-            Fragment selected;
+            Fragment selected = null;
             if (item.getItemId() == R.id.nav_product) {
-                selected = new UserProductFragment();
-            }else if(item.getItemId() == R.id.nav_cart){
+                selected = new UserProductFragment(userId, username);
+            } else if(item.getItemId() == R.id.nav_cart){
                 Intent cartIntent = new Intent(UserHomeActivity.this, CartActivity.class);
                 cartIntent.putExtra("userId", userId);
                 cartIntent.putExtra("username", username);
@@ -42,11 +52,17 @@ public class UserHomeActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             }
-            else {
+            else if (item.getItemId() == R.id.nav_profile) {
                 selected = new ProfileFragment(username);
             }
-            getSupportFragmentManager().beginTransaction().replace(R.id.userFragmentContainer, selected).commit();
-            return true;
+
+            if (selected != null) {
+                getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.userFragmentContainer, selected)
+                    .commit();
+                return true;
+            }
+            return false;
         });
     }
 }

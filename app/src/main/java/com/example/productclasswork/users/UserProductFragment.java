@@ -22,6 +22,13 @@ public class UserProductFragment extends Fragment {
     SearchView searchView;
     UserProductAdapter adapter;
     DbHelper db;
+    private int userId;
+    private String username;
+
+    public UserProductFragment(int userId, String username) {
+        this.userId = userId;
+        this.username = username;
+    }
 
     @Nullable
     @Override
@@ -34,7 +41,7 @@ public class UserProductFragment extends Fragment {
 
         db = new DbHelper(getActivity());
         List<Product> products = db.getAllProducts();
-        adapter = new UserProductAdapter(getActivity(), products);
+        adapter = new UserProductAdapter(getActivity(), products, userId, username);
         recyclerView.setAdapter(adapter);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
