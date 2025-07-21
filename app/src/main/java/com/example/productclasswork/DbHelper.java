@@ -16,8 +16,11 @@ import com.example.productclasswork.models.OrderItem;
 import com.example.productclasswork.models.Product;
 import com.example.productclasswork.models.User;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class DbHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "app_db";
@@ -29,34 +32,57 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Các bảng hiện có
+        // Tạo các bảng
         db.execSQL("CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, role TEXT, active INTEGER)");
         db.execSQL("CREATE TABLE products (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, price REAL, stock INTEGER, description TEXT, image TEXT)");
         db.execSQL("CREATE TABLE cart (id INTEGER PRIMARY KEY AUTOINCREMENT, product_id INTEGER, quantity INTEGER)");
         db.execSQL("CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, date TEXT, status TEXT)");
         db.execSQL("CREATE TABLE order_items (orderId INTEGER, productId INTEGER, quantity INTEGER, unitPrice REAL)");
-        
-        // Tạo bảng comments với orderId
-        createCommentsTable(db);
-
-        // Data mẫu cho users và products
-        db.execSQL("INSERT INTO users (username, password, role, active) VALUES " +
-                "('admin', '123', 'admin', 1), " +
-                "('user1', '123', 'user', 1), " +
-                "('user2', '123', 'user', 1)");
-
-        db.execSQL("INSERT INTO products (title, price, stock, description, image) VALUES " +
-                "('Laptop A', 500.0, 10, 'Lightweight laptop', 'https://via.placeholder.com/100')," +
-                "('Phone B', 300.0, 25, 'High performance phone', 'https://via.placeholder.com/100')," +
-                "('Tablet C', 250.0, 8, 'Compact tablet device', 'https://via.placeholder.com/100')");
-    }
-
-    private void createCommentsTable(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE comments (id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "productId INTEGER, userId INTEGER, orderId INTEGER, content TEXT, rating REAL, date TEXT, username TEXT, " +
                 "FOREIGN KEY(productId) REFERENCES products(id), " +
                 "FOREIGN KEY(userId) REFERENCES users(id), " +
                 "FOREIGN KEY(orderId) REFERENCES orders(id))");
+
+        // Thêm dữ liệu mẫu cho users
+        db.execSQL("INSERT INTO users (username, password, role, active) VALUES " +
+                "('admin', '123', 'admin', 1), " +
+                "('user1', '123', 'user', 1), " +
+                "('user2', '123', 'user', 1)");
+
+        // Thêm dữ liệu mẫu cho products
+        db.execSQL("INSERT INTO products (title, price, stock, description, image) VALUES " +
+                "('Laptop Gaming MSI', 1500.0, 10, 'Laptop gaming cao cấp với GPU mạnh mẽ', 'https://via.placeholder.com/300')," +
+                "('iPhone 15 Pro', 1200.0, 25, 'Điện thoại cao cấp từ Apple', 'https://via.placeholder.com/300')," +
+                "('Samsung Galaxy Tab S9', 800.0, 15, 'Máy tính bảng Android cao cấp', 'https://via.placeholder.com/300')," +
+                "('Apple Watch Series 9', 500.0, 20, 'Đồng hồ thông minh từ Apple', 'https://via.placeholder.com/300')," +
+                "('AirPods Pro 2', 250.0, 30, 'Tai nghe không dây cao cấp', 'https://via.placeholder.com/300')");
+
+        // Thêm dữ liệu mẫu cho orders và order_items
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date());
+        
+        // Order cho user1 (id=2)
+        db.execSQL("INSERT INTO orders (userId, date, status) VALUES (2, ?, 'Completed')", new String[]{currentDate});
+        db.execSQL("INSERT INTO order_items (orderId, productId, quantity, unitPrice) VALUES " +
+                "(last_insert_rowid(), 1, 1, 1500.0)," +
+                "(last_insert_rowid(), 2, 1, 1200.0)");
+
+        db.execSQL("INSERT INTO orders (userId, date, status) VALUES (2, ?, 'Delivering')", new String[]{currentDate});
+        db.execSQL("INSERT INTO order_items (orderId, productId, quantity, unitPrice) VALUES " +
+                "(last_insert_rowid(), 3, 1, 800.0)," +
+                "(last_insert_rowid(), 4, 1, 500.0)");
+
+        // Order cho user2 (id=3)
+        db.execSQL("INSERT INTO orders (userId, date, status) VALUES (3, ?, 'Pending')", new String[]{currentDate});
+        db.execSQL("INSERT INTO order_items (orderId, productId, quantity, unitPrice) VALUES " +
+                "(last_insert_rowid(), 1, 1, 1500.0)," +
+                "(last_insert_rowid(), 5, 2, 250.0)");
+
+        // Thêm một số comment mẫu
+        db.execSQL("INSERT INTO comments (productId, userId, orderId, content, rating, date, username) VALUES " +
+                "(1, 2, 1, 'Sản phẩm rất tốt, đáng mua', 5.0, ?, 'user1')", new String[]{currentDate});
+
+        android.util.Log.d("DbHelper", "Database created with sample data");
     }
 
     @Override
@@ -337,58 +363,86 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public int getUnreviewedPurchaseCount(int userId, int productId) {
         SQLiteDatabase db = getReadableDatabase();
-        // Đếm số đơn hàng hợp lệ chưa review (giống logic lấy orderId)
-        String sql = "SELECT COUNT(DISTINCT o.id) as unreviewed_count FROM orders o " +
-                "INNER JOIN order_items oi ON o.id = oi.orderId " +
-                "WHERE o.userId = ? AND oi.productId = ? " +
-                "AND o.status IN ('Completed', 'Delivering', 'Pending') " +
-                "AND o.id NOT IN (SELECT orderId FROM comments WHERE userId = ? AND productId = ?)";
-        Cursor c = db.rawQuery(sql, new String[]{
-            String.valueOf(userId),
-            String.valueOf(productId),
-            String.valueOf(userId),
-            String.valueOf(productId)
-        });
+        Cursor c = null;
         int count = 0;
-        if (c.moveToFirst()) {
-            count = c.getInt(c.getColumnIndexOrThrow("unreviewed_count"));
+        
+        try {
+            String sql = "SELECT COUNT(DISTINCT o.id) as unreviewed_count FROM orders o " +
+                    "INNER JOIN order_items oi ON o.id = oi.orderId " +
+                    "WHERE o.userId = ? AND oi.productId = ? " +
+                    "AND o.status IN ('Completed', 'Delivering', 'Pending') " +
+                    "AND NOT EXISTS (SELECT 1 FROM comments c " +
+                    "               WHERE c.orderId = o.id " +
+                    "               AND c.userId = ? " +
+                    "               AND c.productId = ?)";
+            
+            c = db.rawQuery(sql, new String[]{
+                String.valueOf(userId),
+                String.valueOf(productId),
+                String.valueOf(userId),
+                String.valueOf(productId)
+            });
+            
+            if (c != null && c.moveToFirst()) {
+                count = c.getInt(c.getColumnIndexOrThrow("unreviewed_count"));
+            }
+        } catch (Exception e) {
+            android.util.Log.e("OrderDebug", "Error getting unreviewed count: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                c.close();
+            }
         }
-        c.close();
+        
+        android.util.Log.d("OrderDebug", "Unreviewed count: " + count);
         return count;
     }
 
     public boolean addComment(Comment comment) {
         SQLiteDatabase db = getWritableDatabase();
+        Cursor orderCheck = null;
+        Cursor commentCheck = null;
+        Cursor orderItemCheck = null;
+        
         try {
             // Log thông tin comment trước khi lưu
             android.util.Log.d("CommentDebug", "Saving comment: " +
                     "productId=" + comment.productId +
                     ", userId=" + comment.userId +
                     ", orderId=" + comment.orderId +
+                    ", username=" + comment.username +
                     ", content=" + comment.content +
                     ", rating=" + comment.rating +
                     ", date=" + comment.date);
 
             // Kiểm tra xem orderId có tồn tại và có trạng thái hợp lệ không
-            Cursor orderCheck = db.rawQuery(
-                "SELECT id FROM orders WHERE id = ? AND status IN ('Completed', 'Delivering', 'Pending')",
+            orderCheck = db.rawQuery(
+                "SELECT id, status FROM orders WHERE id = ?",
                 new String[]{String.valueOf(comment.orderId)}
             );
-            boolean orderValid = orderCheck.moveToFirst();
-            orderCheck.close();
+            
+            boolean orderExists = orderCheck.moveToFirst();
+            String orderStatus = orderExists ? orderCheck.getString(orderCheck.getColumnIndexOrThrow("status")) : null;
 
-            if (!orderValid) {
-                android.util.Log.e("CommentDebug", "Order not found or invalid status: " + comment.orderId);
+            android.util.Log.d("CommentDebug", "Order exists: " + orderExists + ", status: " + orderStatus);
+
+            if (!orderExists) {
+                android.util.Log.e("CommentDebug", "Order not found: " + comment.orderId);
+                return false;
+            }
+
+            if (!isValidOrderStatus(orderStatus)) {
+                android.util.Log.e("CommentDebug", "Invalid order status: " + orderStatus);
                 return false;
             }
 
             // Kiểm tra xem đã có comment cho order này chưa
-            Cursor commentCheck = db.rawQuery(
+            commentCheck = db.rawQuery(
                 "SELECT id FROM comments WHERE orderId = ?",
                 new String[]{String.valueOf(comment.orderId)}
             );
             boolean hasComment = commentCheck.moveToFirst();
-            commentCheck.close();
 
             if (hasComment) {
                 android.util.Log.e("CommentDebug", "Comment already exists for order: " + comment.orderId);
@@ -396,7 +450,7 @@ public class DbHelper extends SQLiteOpenHelper {
             }
 
             // Kiểm tra xem order có thuộc về user này không và có chứa sản phẩm này không
-            Cursor orderItemCheck = db.rawQuery(
+            orderItemCheck = db.rawQuery(
                 "SELECT o.id FROM orders o " +
                 "INNER JOIN order_items oi ON o.id = oi.orderId " +
                 "WHERE o.id = ? AND o.userId = ? AND oi.productId = ?",
@@ -407,7 +461,6 @@ public class DbHelper extends SQLiteOpenHelper {
                 }
             );
             boolean orderBelongsToUser = orderItemCheck.moveToFirst();
-            orderItemCheck.close();
 
             if (!orderBelongsToUser) {
                 android.util.Log.e("CommentDebug", "Order does not belong to user or does not contain product");
@@ -421,6 +474,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put("content", comment.content);
             values.put("rating", comment.rating);
             values.put("date", comment.date);
+            values.put("username", comment.username);
 
             long result = db.insert("comments", null, values);
             
@@ -436,8 +490,19 @@ public class DbHelper extends SQLiteOpenHelper {
             e.printStackTrace();
             return false;
         } finally {
+            if (orderCheck != null) orderCheck.close();
+            if (commentCheck != null) commentCheck.close();
+            if (orderItemCheck != null) orderItemCheck.close();
             db.close();
         }
+    }
+
+    private boolean isValidOrderStatus(String status) {
+        return status != null && (
+            status.equals("Completed") ||
+            status.equals("Delivering") ||
+            status.equals("Pending")
+        );
     }
 
     public List<Comment> getCommentsByProductId(int productId) {
@@ -529,34 +594,42 @@ public class DbHelper extends SQLiteOpenHelper {
     public List<Integer> getOrderIdsForUnreviewedPurchases(int userId, int productId) {
         SQLiteDatabase db = getReadableDatabase();
         List<Integer> orderIds = new ArrayList<>();
+        Cursor c = null;
         
         try {
             // Lấy danh sách order_id của các đơn hàng chưa review
-            String sql = "SELECT DISTINCT o.id FROM orders o " +
+            String sql = "SELECT DISTINCT o.id, o.status FROM orders o " +
                     "INNER JOIN order_items oi ON o.id = oi.orderId " +
                     "WHERE o.userId = ? AND oi.productId = ? " +
                     "AND o.status IN ('Completed', 'Delivering', 'Pending') " +
-                    "AND o.id NOT IN (SELECT orderId FROM comments WHERE userId = ? AND productId = ?)";
+                    "AND NOT EXISTS (SELECT 1 FROM comments c " +
+                    "               WHERE c.orderId = o.id " +
+                    "               AND c.userId = ? " +
+                    "               AND c.productId = ?)";
             
             android.util.Log.d("OrderDebug", "Executing query: " + sql);
             android.util.Log.d("OrderDebug", "Parameters: userId=" + userId + ", productId=" + productId);
             
-            Cursor c = db.rawQuery(sql, new String[]{
-                String.valueOf(userId), 
+            c = db.rawQuery(sql, new String[]{
+                String.valueOf(userId),
                 String.valueOf(productId),
                 String.valueOf(userId),
                 String.valueOf(productId)
             });
             
-            while (c.moveToNext()) {
+            while (c != null && c.moveToNext()) {
                 int orderId = c.getInt(0);
+                String status = c.getString(1);
                 orderIds.add(orderId);
-                android.util.Log.d("OrderDebug", "Found unreviewed order: " + orderId);
+                android.util.Log.d("OrderDebug", "Found unreviewed order: " + orderId + " with status: " + status);
             }
-            c.close();
         } catch (Exception e) {
             android.util.Log.e("OrderDebug", "Error getting unreviewed orders: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            if (c != null) {
+                c.close();
+            }
         }
         
         android.util.Log.d("OrderDebug", "Total unreviewed orders found: " + orderIds.size());

@@ -21,6 +21,8 @@ import com.example.productclasswork.R;
 import com.example.productclasswork.models.Comment;
 import com.example.productclasswork.models.Product;
 import com.example.productclasswork.models.User;
+import com.example.productclasswork.utils.BadWordsChecker;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,12 +39,15 @@ public class ProductDetailActivity extends AppCompatActivity {
     private EditText edtComment;
     private TextView txtReviewsLeft;
     private List<Integer> unreviewedOrderIds;
+    private BadWordsChecker badWordsChecker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
 
+        badWordsChecker = new BadWordsChecker(this);
+        
         // Thiết lập toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -112,6 +117,17 @@ public class ProductDetailActivity extends AppCompatActivity {
             
             if (content.isEmpty()) {
                 Toast.makeText(this, "Please write your review", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Kiểm tra từ ngữ không phù hợp
+            if (badWordsChecker.containsBadWords(content)) {
+                String badWord = badWordsChecker.findFirstBadWord(content);
+                Snackbar snackbar = Snackbar.make(v, 
+                    "Warning: Your review contains inappropriate word '" + badWord + "'. Please revise your review to follow community guidelines.", 
+                    Snackbar.LENGTH_LONG);
+                snackbar.setBackgroundTint(getResources().getColor(android.R.color.holo_orange_light, null));
+                snackbar.show();
                 return;
             }
 
