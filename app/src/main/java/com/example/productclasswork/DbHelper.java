@@ -9,10 +9,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
 
-import com.example.productclasswork.models.CartItem;
 import com.example.productclasswork.models.Comment;
 import com.example.productclasswork.models.Order;
 import com.example.productclasswork.models.OrderItem;
+import com.example.productclasswork.models.OrderItemDetail;
 import com.example.productclasswork.models.Product;
 import com.example.productclasswork.models.User;
 
@@ -672,4 +672,183 @@ public class DbHelper extends SQLiteOpenHelper {
         c.close();
         return null;
     }
+    public double getTotalRevenue() {
+        double total = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT SUM(order_items.quantity * order_items.unitPrice) as revenue " +
+                "FROM order_items " +
+                "INNER JOIN orders ON orders.id = order_items.orderId " +
+                "WHERE orders.status = 'Completed'";
+
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor.moveToFirst()) {
+            total = cursor.getDouble(cursor.getColumnIndexOrThrow("revenue"));
+        }
+        cursor.close();
+        return total;
+    }
+
+
+    // Trong DbHelper.java
+    public List<Order> getCompletedOrders() {
+        List<Order> orders = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor orderCursor = db.rawQuery("SELECT * FROM orders WHERE status = 'Completed'", null);
+        if (orderCursor.moveToFirst()) {
+            do {
+                int orderId = orderCursor.getInt(orderCursor.getColumnIndexOrThrow("id"));
+                int userId = orderCursor.getInt(orderCursor.getColumnIndexOrThrow("userId"));
+                String date = orderCursor.getString(orderCursor.getColumnIndexOrThrow("date"));
+                String status = orderCursor.getString(orderCursor.getColumnIndexOrThrow("status"));
+
+                List<OrderItem> items = new ArrayList<>();
+                Cursor itemCursor = db.rawQuery(
+                        "SELECT oi.orderId, oi.productId, oi.quantity, oi.unitPrice, p.title " +
+                                "FROM order_items oi JOIN products p ON oi.productId = p.id " +
+                                "WHERE oi.orderId = ?",
+                        new String[]{String.valueOf(orderId)}
+                );
+
+                if (itemCursor.moveToFirst()) {
+                    do {
+                        int productId = itemCursor.getInt(itemCursor.getColumnIndexOrThrow("productId"));
+                        int quantity = itemCursor.getInt(itemCursor.getColumnIndexOrThrow("quantity"));
+                        double unitPrice = itemCursor.getDouble(itemCursor.getColumnIndexOrThrow("unitPrice"));
+                        String title = itemCursor.getString(itemCursor.getColumnIndexOrThrow("title"));
+
+                        OrderItem item = new OrderItem(orderId, productId, quantity, unitPrice);
+                        items.add(item);
+                    } while (itemCursor.moveToNext());
+                }
+                itemCursor.close();
+
+                Order order = new Order(orderId, userId, date, status, items);
+                orders.add(order);
+            } while (orderCursor.moveToNext());
+        }
+        orderCursor.close();
+        return orders;
+    }
+
+    // Lấy danh sách sản phẩm theo orderId
+    private List<OrderItem> getOrderItemsByOrderId(int orderId) {
+        List<OrderItem> items = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM order_items WHERE orderId = ?", new String[]{String.valueOf(orderId)});
+        while (cursor.moveToNext()) {
+            int productId = cursor.getInt(cursor.getColumnIndexOrThrow("productId"));
+            int quantity = cursor.getInt(cursor.getColumnIndexOrThrow("quantity"));
+            double unitPrice = cursor.getDouble(cursor.getColumnIndexOrThrow("unitPrice"));
+
+            items.add(new OrderItem(orderId, productId, quantity, unitPrice));
+        }
+
+        cursor.close();
+        return items;
+    }
+    public List<String> getCompletedOrderDetails() {
+        List<String> details = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT o.id AS orderId, p.title, oi.quantity, oi.unitPrice " +
+                "FROM orders o " +
+                "JOIN order_items oi ON o.id = oi.orderId " +
+                "JOIN products p ON oi.productId = p.id " +
+                "WHERE o.status = 'Completed'";
+
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor.moveToFirst()) {
+            do {
+                int orderId = cursor.getInt(cursor.getColumnIndexOrThrow("orderId"));
+                String productTitle = cursor.getString(cursor.getColumnIndexOrThrow("title"));
+                int quantity = cursor.getInt(cursor.getColumnIndexOrThrow("quantity"));
+                double unitPrice = cursor.getDouble(cursor.getColumnIndexOrThrow("unitPrice"));
+
+                double totalPrice = unitPrice * quantity;
+
+                String detail = "Order #" + orderId +
+                        " | Product: " + productTitle +
+                        " | Quantity: " + quantity +
+                        " | Unit Price: $" + unitPrice +
+                        " | Total: $" + totalPrice;
+
+                details.add(detail);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return details;
+    }
+    public List<OrderItem> getCompletedOrderItems() {
+        List<OrderItem> items = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT oi.orderId, oi.productId, oi.quantity, oi.unitPrice " +
+                "FROM order_items oi " +
+                "JOIN orders o ON oi.orderId = o.id " +
+                "WHERE o.status = 'Completed'";
+
+        Cursor cursor = db.rawQuery(query, null);
+        while (cursor.moveToNext()) {
+            int orderId = cursor.getInt(cursor.getColumnIndexOrThrow("orderId"));
+            int productId = cursor.getInt(cursor.getColumnIndexOrThrow("productId"));
+            int quantity = cursor.getInt(cursor.getColumnIndexOrThrow("quantity"));
+            double unitPrice = cursor.getDouble(cursor.getColumnIndexOrThrow("unitPrice"));
+
+            items.add(new OrderItem(orderId, productId, quantity, unitPrice));
+        }
+
+        cursor.close();
+        return items;
+    }
+    public String getProductTitleById(int productId) {
+        String title = "Unknown Product";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT title FROM products WHERE id = ?", new String[]{String.valueOf(productId)});
+        if (cursor.moveToFirst()) {
+            title = cursor.getString(cursor.getColumnIndexOrThrow("title"));
+        }
+        cursor.close();
+        return title;
+    }
+    public ArrayList<Product> getAllProductsSortedByPriceAsc() {
+        ArrayList<Product> list = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM products ORDER BY price ASC", null);
+        while (c.moveToNext()) {
+            list.add(new Product(
+                    c.getInt(0),
+                    c.getString(1),
+                    c.getDouble(2),
+                    c.getInt(3),
+                    c.getString(4),
+                    c.getString(5)
+            ));
+        }
+        c.close();
+        return list;
+    }
+
+    public ArrayList<Product> getAllProductsSortedByPriceDesc() {
+        ArrayList<Product> list = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM products ORDER BY price DESC", null);
+        while (c.moveToNext()) {
+            list.add(new Product(
+                    c.getInt(0),
+                    c.getString(1),
+                    c.getDouble(2),
+                    c.getInt(3),
+                    c.getString(4),
+                    c.getString(5)
+            ));
+        }
+        c.close();
+        return list;
+    }
+
+
+
 }

@@ -39,5 +39,11 @@
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:fontFamily="sans-serif-medium" />
+        <Button
+            android:id="@+id/btnMarkComplete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mark Complete"
+            android:visibility="gone" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

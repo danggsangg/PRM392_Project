@@ -1,12 +1,12 @@
 package com.example.productclasswork.admins.products;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.SearchView;
+import android.widget.Spinner;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -14,10 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.productclasswork.DbHelper;
-import com.example.productclasswork.models.Product;
 import com.example.productclasswork.R;
+import com.example.productclasswork.models.Product;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class AdminProductFragment extends Fragment {
@@ -25,6 +27,8 @@ public class AdminProductFragment extends Fragment {
     AdminProductAdapter adapter;
     DbHelper db;
     private SearchView searchView;
+    private Spinner spinnerSort;
+    private List<Product> list;
 
     @Nullable
     @Override
@@ -35,7 +39,8 @@ public class AdminProductFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         db = new DbHelper(getActivity());
-        List<Product> list = db.getAllProducts();
+        list = db.getAllProducts();
+
         adapter = new AdminProductAdapter(getActivity(), list);
         recyclerView.setAdapter(adapter);
 
@@ -54,6 +59,35 @@ public class AdminProductFragment extends Fragment {
             }
         });
 
+        // ✅ Spinner sắp xếp
+        spinnerSort = view.findViewById(R.id.spinnerSort);
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter<>(
+                getActivity(), android.R.layout.simple_spinner_item,
+                new String[]{"Mặc định", "Giá tăng dần", "Giá giảm dần"}
+        );
+        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSort.setAdapter(sortAdapter);
+
+        spinnerSort.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                switch (pos) {
+                    case 1: // Giá tăng dần
+                        adapter.setData(db.getAllProductsSortedByPriceAsc());
+                        break;
+                    case 2: // Giá giảm dần
+                        adapter.setData(db.getAllProductsSortedByPriceDesc());
+                        break;
+                    default:
+                        adapter.setData(db.getAllProducts()); // reset mặc định
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
         FloatingActionButton fab = view.findViewById(R.id.fabAdd);
         fab.setOnClickListener(v -> {
             startActivity(new Intent(getActivity(), EditProductActivity.class));
@@ -62,7 +96,6 @@ public class AdminProductFragment extends Fragment {
         return view;
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private void loadProductList() {
         List<Product> newList = db.getAllProducts();
         adapter.setData(newList);
@@ -71,7 +104,6 @@ public class AdminProductFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadProductList(); // reload lại mỗi khi quay về tab
+        loadProductList(); // reload khi quay lại
     }
-
 }
