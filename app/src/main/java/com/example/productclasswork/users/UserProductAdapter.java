@@ -109,4 +109,14 @@ public class UserProductAdapter extends RecyclerView.Adapter<UserProductAdapter.
         fullList.addAll(newList);
         notifyDataSetChanged();
     }
+    public void updateData(List<Product> newList) {
+        productList.clear();
+        productList.addAll(newList);
+
+        fullList.clear();
+        fullList.addAll(newList);
+
+        notifyDataSetChanged();
+    }
+
 }

@@ -31,7 +31,7 @@
         <activity android:name=".users.ProductDetailActivity" />
         <activity android:name=".admins.AdminOrderActivity" />
         <activity android:name=".admins.products.EditProductActivity" />
-
+        <activity android:name=".admins.RevenueActivity" />
     </application>
 
 </manifest>

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">ProductClassWork</string>
+    <string-array name="sort_options">
+        <item>Sắp xếp theo giá tăng dần</item>
+        <item>Sắp xếp theo giá giảm dần</item>
+    </string-array>
+
 </resources>

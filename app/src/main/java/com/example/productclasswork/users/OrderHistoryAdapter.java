@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.productclasswork.DbHelper;
 import com.example.productclasswork.R;
-import com.example.productclasswork.models.CartItem;
 import com.example.productclasswork.models.Order;
 import com.example.productclasswork.models.OrderItem;
 
@@ -29,11 +28,13 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
 
     public static class OrderViewHolder extends RecyclerView.ViewHolder {
         TextView txtOrderInfo;
-        Button btnCancel;
+        Button btnCancel, btnMarkComplete;
+
         public OrderViewHolder(View itemView) {
             super(itemView);
             txtOrderInfo = itemView.findViewById(R.id.txtOrderInfo);
             btnCancel = itemView.findViewById(R.id.btnCancel);
+            btnMarkComplete = itemView.findViewById(R.id.btnMarkComplete);
         }
     }
 
@@ -50,41 +51,64 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         StringBuilder info = new StringBuilder("Order #" + order.id + " (" + order.date + ")\n");
         double total = 0;
         for (OrderItem item : order.items) {
+            double itemTotal = item.unitPrice * item.quantity;
             info.append("- Product ID: ").append(item.productId)
                     .append(", Qty: ").append(item.quantity)
-                    .append(", $").append(item.unitPrice).append("\n");
-            total += item.unitPrice * item.quantity;
+                    .append(", Price: $").append(item.unitPrice)
+                    .append(", Subtotal: $").append(itemTotal).append("\n");
+            total += itemTotal;
         }
-        info.append("Total: $").append(total);
-        info.append("Status: ").append(order.status).append("\n");
+        info.append("Total: $").append(total).append("\n");
+        info.append("Status: ").append(order.status);
 
         holder.txtOrderInfo.setText(info.toString());
 
+        // Cancel button logic
+        if ("Pending".equals(order.status)) {
+            holder.btnCancel.setVisibility(View.VISIBLE);
+            holder.btnCancel.setOnClickListener(v -> {
+                new AlertDialog.Builder(v.getContext())
+                        .setTitle("Cancel Order")
+                        .setMessage("Are you sure you want to cancel this order? You won't be able to review the products after cancellation.")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            DbHelper db = new DbHelper(v.getContext());
+                            db.updateOrderStatus(order.id, "Cancelled");
+                            order.status = "Cancelled";
+                            notifyItemChanged(position);
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+            });
+        } else {
+            holder.btnCancel.setVisibility(View.GONE);
+        }
+
+        // Mark Complete logic
+        if ("Delivering".equals(order.status)) {
+            holder.btnMarkComplete.setVisibility(View.VISIBLE);
+            holder.btnMarkComplete.setOnClickListener(v -> {
+                new AlertDialog.Builder(v.getContext())
+                        .setTitle("Xác nhận đã nhận hàng")
+                        .setMessage("Bạn có chắc chắn đã nhận được đơn hàng này?")
+                        .setPositiveButton("Đã nhận", (dialog, which) -> {
+                            DbHelper db = new DbHelper(v.getContext());
+                            db.updateOrderStatus(order.id, "Completed");
+                            order.status = "Completed";
+                            notifyItemChanged(position);
+                        })
+                        .setNegativeButton("Huỷ", null)
+                        .show();
+            });
+        } else {
+            holder.btnMarkComplete.setVisibility(View.GONE);
+        }
+
+        // Optional: Click vào order để xem chi tiết
         holder.itemView.setOnClickListener(v -> {
             Intent i = new Intent(v.getContext(), OrderDetailActivity.class);
             i.putExtra("orderItems", new ArrayList<>(order.items));
             v.getContext().startActivity(i);
         });
-
-        Button btnCancel = holder.btnCancel;
-        if ("Pending".equals(order.status)) {
-            btnCancel.setVisibility(View.VISIBLE);
-            btnCancel.setOnClickListener(v -> {
-                new AlertDialog.Builder(v.getContext())
-                    .setTitle("Cancel Order")
-                    .setMessage("Are you sure you want to cancel this order? You won't be able to review the products after cancellation.")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        DbHelper db = new DbHelper(v.getContext());
-                        db.updateOrderStatus(order.id, "Cancelled");
-                        order.status = "Cancelled";
-                        notifyItemChanged(position);
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
-            });
-        } else {
-            btnCancel.setVisibility(View.GONE);
-        }
     }
 
     @Override
@@ -92,4 +116,3 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         return orderList.size();
     }
 }
-

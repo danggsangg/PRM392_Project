@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.productclasswork.admins.AdminOrderActivity;
+import com.example.productclasswork.admins.RevenueActivity;
 import com.example.productclasswork.admins.products.AdminProductFragment;
 import com.example.productclasswork.admins.users.UserFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -35,6 +36,10 @@ public class AdminHomeActivity extends AppCompatActivity {
                 return true;
             } else if (item.getItemId() == R.id.nav_orders){
                 startActivity(new Intent(AdminHomeActivity.this, AdminOrderActivity.class));
+                return true;
+            }
+            else if (item.getItemId() == R.id.nav_revenue) {
+                startActivity(new Intent(AdminHomeActivity.this, RevenueActivity.class));
                 return true;
             }
             return false;

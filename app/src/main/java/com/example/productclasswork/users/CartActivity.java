@@ -13,6 +13,7 @@ import com.example.productclasswork.R;
 import com.example.productclasswork.models.CartItem;
 import com.example.productclasswork.models.Order;
 import com.example.productclasswork.models.OrderItem;
+import com.example.productclasswork.models.Product;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,7 +43,19 @@ public class CartActivity extends AppCompatActivity {
         btnOrder = findViewById(R.id.btnOrder);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new CartAdapter(CartManager.getCart(), updatedTotal -> txtTotal.setText("Total: $" + updatedTotal));
+
+        // Ensure full product info from DbHelper
+        DbHelper db = new DbHelper(this);
+        List<CartItem> cartItems = CartManager.getCart();
+        List<CartItem> enrichedItems = new ArrayList<>();
+        for (CartItem item : cartItems) {
+            Product p = db.getProductById(item.productId);
+            if (p != null) {
+                enrichedItems.add(new CartItem(p.id, p.title, p.price, item.quantity, p.stock));
+            }
+        }
+
+        adapter = new CartAdapter(enrichedItems, updatedTotal -> txtTotal.setText("Total: $" + updatedTotal));
         recyclerView.setAdapter(adapter);
 
         btnOrder.setOnClickListener(v -> {
@@ -51,8 +64,6 @@ public class CartActivity extends AppCompatActivity {
                 txtTotal.setText("No items selected");
                 return;
             }
-
-            DbHelper db = new DbHelper(this);
 
             List<OrderItem> orderItems = new ArrayList<>();
             for (CartItem item : selected) {
@@ -68,6 +79,5 @@ public class CartActivity extends AppCompatActivity {
             adapter.setData(CartManager.getCart());
             txtTotal.setText("Order placed successfully");
         });
-
     }
 }

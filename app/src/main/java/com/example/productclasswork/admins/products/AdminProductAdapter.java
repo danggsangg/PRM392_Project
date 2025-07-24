@@ -109,4 +109,9 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         fullList.addAll(newList);
         notifyDataSetChanged();
     }
+    public void setProductList(List<Product> newList) {
+        this.productList = newList;
+        notifyDataSetChanged();
+    }
+
 }
